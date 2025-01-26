@@ -1,0 +1,11 @@
+{
+    "abi": [
+        {
+            "inputs": [{ "type": "bytes", "name": "data" }],
+            "name": "executeActionDirect",
+            "outputs": [],
+            "stateMutability": "payable",
+            "type": "function"
+        }
+    ]
+}

@@ -1,0 +1,14 @@
+{
+  "abi": [
+    {
+      "inputs": [
+        { "type": "address", "name": "target" },
+        { "type": "bytes", "name": "data" }
+      ],
+      "name": "execute",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ]
+}

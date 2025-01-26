@@ -1,0 +1,29 @@
+{
+  "adress": "0x9972ea786945C39e76eCC243c7190f9E7409Aa78",
+  "abi": [
+    {
+      "type": "function",
+      "name": "createShort",
+      "inputs": [
+        {
+          "name": "_callData",
+          "type": "bytes"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "payable"
+    },
+    {
+      "type": "function",
+      "name": "withdrawShort",
+      "inputs": [
+        {
+          "name": "_callData",
+          "type": "bytes"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "payable"
+    }
+  ]
+}
