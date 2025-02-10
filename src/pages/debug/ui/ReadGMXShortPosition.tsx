@@ -26,7 +26,7 @@ export const ReadGMXShortPosition = () => {
           setAddress(e.target.value);
         }}
       />
-      <Button onClick={onClick}>Get Data</Button>
+      {/* <Button onClick={onClick}>Get Data</Button> */}
       <div className="relative w-[300px] space-y-4">
         {Object.entries(data).map(([key, value]) => (
           <div key={key} className="my-2 rounded-lg border p-2">

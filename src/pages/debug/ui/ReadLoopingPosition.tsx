@@ -2,9 +2,8 @@ import { AAVE_DATA_PROVIDER_ADDRESS, AAVE_DATA_PROVIDER_ABI, AAVE_POOL_ABI } fro
 import { publicClient } from '@/shared/config/wagmi.config';
 import { Button } from '@/shared/ui/Button';
 import { Input } from '@/shared/ui/Input';
-import { Address } from 'cluster';
 import { useState } from 'react';
-import { formatUnits } from 'viem';
+import { Address, formatUnits } from 'viem';
 
 export const ReadLoopingPosition = () => {
   const dsProxy = localStorage.getItem('ds_proxy');
@@ -63,7 +62,7 @@ export const ReadLoopingPosition = () => {
         }}
       />
       <Button onClick={onClick}>Get Data</Button>
-      <div className="relative w-[300px] h-[400px] overflow-scroll space-y-4">
+      <div className="relative h-[400px] w-[300px] space-y-4 overflow-scroll">
         {Object.entries(data).map(([key, value]) => (
           <div key={key} className="my-2 rounded-lg border p-2">
             <div className="overflow-scroll text-gray-600">

@@ -18,6 +18,7 @@ function NavHeader() {
         </Link>
       </Tab>
       <Tab setPosition={setPosition}>
+        {/* @ts-ignore */}
         <Link to="/pro" className="[&.active]:font-bold">
           pro
         </Link>
