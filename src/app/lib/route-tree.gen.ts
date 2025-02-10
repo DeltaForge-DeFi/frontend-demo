@@ -16,31 +16,24 @@ import { Route as rootRoute } from './../routes/__root'
 
 // Create Virtual Routes
 
-const Looping2LazyImport = createFileRoute('/looping2')()
-const LoopingLazyImport = createFileRoute('/looping')()
 const LiteLazyImport = createFileRoute('/lite')()
+const DebugLazyImport = createFileRoute('/debug')()
 const AboutLazyImport = createFileRoute('/about')()
 const IndexLazyImport = createFileRoute('/')()
 
 // Create/Update Routes
-
-const Looping2LazyRoute = Looping2LazyImport.update({
-  id: '/looping2',
-  path: '/looping2',
-  getParentRoute: () => rootRoute,
-} as any).lazy(() => import('../routes/debug.lazy').then((d) => d.Route))
-
-const LoopingLazyRoute = LoopingLazyImport.update({
-  id: '/looping',
-  path: '/looping',
-  getParentRoute: () => rootRoute,
-} as any).lazy(() => import('./../routes/looping.lazy').then((d) => d.Route))
 
 const LiteLazyRoute = LiteLazyImport.update({
   id: '/lite',
   path: '/lite',
   getParentRoute: () => rootRoute,
 } as any).lazy(() => import('./../routes/lite.lazy').then((d) => d.Route))
+
+const DebugLazyRoute = DebugLazyImport.update({
+  id: '/debug',
+  path: '/debug',
+  getParentRoute: () => rootRoute,
+} as any).lazy(() => import('./../routes/debug.lazy').then((d) => d.Route))
 
 const AboutLazyRoute = AboutLazyImport.update({
   id: '/about',
@@ -72,25 +65,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AboutLazyImport
       parentRoute: typeof rootRoute
     }
+    '/debug': {
+      id: '/debug'
+      path: '/debug'
+      fullPath: '/debug'
+      preLoaderRoute: typeof DebugLazyImport
+      parentRoute: typeof rootRoute
+    }
     '/lite': {
       id: '/lite'
       path: '/lite'
       fullPath: '/lite'
       preLoaderRoute: typeof LiteLazyImport
-      parentRoute: typeof rootRoute
-    }
-    '/looping': {
-      id: '/looping'
-      path: '/looping'
-      fullPath: '/looping'
-      preLoaderRoute: typeof LoopingLazyImport
-      parentRoute: typeof rootRoute
-    }
-    '/looping2': {
-      id: '/looping2'
-      path: '/looping2'
-      fullPath: '/looping2'
-      preLoaderRoute: typeof Looping2LazyImport
       parentRoute: typeof rootRoute
     }
   }
@@ -101,51 +87,46 @@ declare module '@tanstack/react-router' {
 export interface FileRoutesByFullPath {
   '/': typeof IndexLazyRoute
   '/about': typeof AboutLazyRoute
+  '/debug': typeof DebugLazyRoute
   '/lite': typeof LiteLazyRoute
-  '/looping': typeof LoopingLazyRoute
-  '/looping2': typeof Looping2LazyRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexLazyRoute
   '/about': typeof AboutLazyRoute
+  '/debug': typeof DebugLazyRoute
   '/lite': typeof LiteLazyRoute
-  '/looping': typeof LoopingLazyRoute
-  '/looping2': typeof Looping2LazyRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexLazyRoute
   '/about': typeof AboutLazyRoute
+  '/debug': typeof DebugLazyRoute
   '/lite': typeof LiteLazyRoute
-  '/looping': typeof LoopingLazyRoute
-  '/looping2': typeof Looping2LazyRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/lite' | '/looping' | '/looping2'
+  fullPaths: '/' | '/about' | '/debug' | '/lite'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/lite' | '/looping' | '/looping2'
-  id: '__root__' | '/' | '/about' | '/lite' | '/looping' | '/looping2'
+  to: '/' | '/about' | '/debug' | '/lite'
+  id: '__root__' | '/' | '/about' | '/debug' | '/lite'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexLazyRoute: typeof IndexLazyRoute
   AboutLazyRoute: typeof AboutLazyRoute
+  DebugLazyRoute: typeof DebugLazyRoute
   LiteLazyRoute: typeof LiteLazyRoute
-  LoopingLazyRoute: typeof LoopingLazyRoute
-  Looping2LazyRoute: typeof Looping2LazyRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexLazyRoute: IndexLazyRoute,
   AboutLazyRoute: AboutLazyRoute,
+  DebugLazyRoute: DebugLazyRoute,
   LiteLazyRoute: LiteLazyRoute,
-  LoopingLazyRoute: LoopingLazyRoute,
-  Looping2LazyRoute: Looping2LazyRoute,
 }
 
 export const routeTree = rootRoute
@@ -160,9 +141,8 @@ export const routeTree = rootRoute
       "children": [
         "/",
         "/about",
-        "/lite",
-        "/looping",
-        "/looping2"
+        "/debug",
+        "/lite"
       ]
     },
     "/": {
@@ -171,14 +151,11 @@ export const routeTree = rootRoute
     "/about": {
       "filePath": "about.lazy.tsx"
     },
+    "/debug": {
+      "filePath": "debug.lazy.tsx"
+    },
     "/lite": {
       "filePath": "lite.lazy.tsx"
-    },
-    "/looping": {
-      "filePath": "looping.lazy.tsx"
-    },
-    "/looping2": {
-      "filePath": "looping2.lazy.tsx"
     }
   }
 }

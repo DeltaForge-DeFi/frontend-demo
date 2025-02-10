@@ -48,3 +48,8 @@ export default tseslint.config({
   },
 })
 ```
+
+
+# How start project 
+
+- pnpm i 

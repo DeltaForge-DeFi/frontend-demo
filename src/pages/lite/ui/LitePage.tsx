@@ -12,10 +12,10 @@ import dsProxyJson from '@/shared/abi/ds-proxy.json';
 import shortJson from '@/shared/abi/short.json';
 import gmxReaderJson from '@/shared/abi/gmx-reader.json';
 
-import DebugWindow from './DebugWindown';
 import { openLooping } from '@/pages/lite/ui/openLooping';
 import { APYChart } from './APYChart';
 import { CHAINLINK_ETH_USD_FEED, CHAINLINK_FEED_ABI, closeLooping } from '@/pages/lite/ui/closeLooping';
+import { BadgeDelta } from '@/shared/ui/badge-delta';
 
 const EXCHANGE_ROUTER_ADDRESS = '0x900173A66dbD345006C51fA35fA3aB760FcD843b';
 const ROUTER_ADDRESS = '0x7452c558d45f8afC8c83dAe62C3f8A5BE19c71f6';
@@ -216,28 +216,6 @@ async function withdraw(address: `0x${string}`) {
   await closeLooping();
 }
 
-const readShortPosition = async (address: `0x${string}`) => {
-  const readResult = await publicClient.readContract({
-    address: READER_ADDRESS as `0x${string}`,
-    abi: gmxReaderJson.abi,
-    functionName: 'getAccountPositions',
-    args: [DATA_STORE_ADDRESS, address, 0n, 100n],
-  });
-
-  //@ts-ignore
-  const result = '';
-
-  console.log(
-    'Reading short position...',
-    //@ts-ignore
-    JSON.stringify(readResult[0], (_, value) => (typeof value === 'bigint' ? value.toString() : value), 2),
-  );
-
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  return readResult ?? readResult[0];
-};
-
 export const LitePage = () => {
   const { isConnected, address } = useAccount();
   const [dsPrxoy, setDsProxy] = useState('0x32fa5955d68F99856661D806192fB3185Ed61F05');
@@ -312,7 +290,7 @@ export const LitePage = () => {
 
   if (!isConnected || !address) {
     return (
-      <div>
+      <div className="container mx-auto">
         <Header />
         <div className="flex min-h-screen w-full items-center justify-center">
           <h2>Please connect your wallet</h2>
@@ -322,7 +300,7 @@ export const LitePage = () => {
   }
 
   return (
-    <>
+    <div className="container mx-auto">
       <Header />
       <div className="flex min-h-screen w-full flex-col justify-between">
         <div className="flex min-h-screen w-full flex-1">
@@ -335,20 +313,20 @@ export const LitePage = () => {
                   value={amount}
                   onChange={onChange}
                   className="mb-4 w-full rounded border bg-gray-900 p-2 text-white"
-                  placeholder="Amount in ETH"
+                  placeholder="Amount in USDC"
                 />
                 {
                   <div className="mb-4">
                     <label className="mb-2 block text-white">
                       Long:{' '}
                       {longAmount
-                        ? `${Number(longAmount).toFixed(4)} ETH ~ $${(Number(longAmount) * Number(formatUnits(ethPrice, 8))).toFixed(2)}`
+                        ? `${Number(longAmount).toFixed(4)} USDC ~ $${(Number(longAmount) * Number(formatUnits(ethPrice, 8))).toFixed(2)}`
                         : '---'}
                     </label>
                     <label className="mb-2 block text-white">
                       Short:{' '}
                       {shortAmount
-                        ? `${Number(shortAmount).toFixed(4)} ETH ~ $${(Number(shortAmount) * Number(formatUnits(ethPrice, 8))).toFixed(2)}`
+                        ? `${Number(shortAmount).toFixed(4)} USDC ~ $${(Number(shortAmount) * Number(formatUnits(ethPrice, 8))).toFixed(2)}`
                         : '---'}
                     </label>
                   </div>
@@ -365,15 +343,16 @@ export const LitePage = () => {
               </Button>
             </div>
           </div>
-          <div className="flex flex-1 items-center justify-center">
+          <div className="flex flex-1 flex-col items-center justify-center">
             <APYChart yearlyAPY={aby} />
+            <div>
+              <BadgeDelta variant="solid" deltaType="increase" iconStyle="line" value="9.3%" className="mr-3" />
+              <BadgeDelta variant="solid" deltaType="decrease" iconStyle="line" value="1.9%" className="mr-3" />
+              <BadgeDelta variant="solid" deltaType="neutral" iconStyle="line" value="0.6%" />
+            </div>
           </div>
         </div>
-        <div className="m-5">
-          {/* @ts-ignore */}
-          <DebugWindow dsProxy={dsPrxoy} readShortPosition={readShortPosition} />
-        </div>
       </div>
-    </>
+    </div>
   );
 };
