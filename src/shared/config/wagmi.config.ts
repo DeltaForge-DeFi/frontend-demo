@@ -3,7 +3,7 @@ import { createPublicClient, createWalletClient, custom, defineChain, http } fro
 import { arbitrum } from 'viem/chains';
 
 const ARBITRUM_ONE_RPC =
-  'https://virtual.arbitrum.rpc.tenderly.co/6eaf7d37-d37e-4f9f-a5f8-fda8f1be72b4';
+  'https://virtual.arbitrum.rpc.tenderly.co/fec9fdf9-2e31-48ac-9e82-ec64365e36d5';
 
 export const virtual_arbitrum_one = defineChain({
   id: 42161,
@@ -15,7 +15,7 @@ export const virtual_arbitrum_one = defineChain({
   blockExplorers: {
     default: {
       name: 'Tenderly Explorer',
-      url: 'https://virtual.arbitrum.rpc.tenderly.co/420d456c-cfc8-4f87-ba74-8647d06683f3'
+      url: 'https://virtual.arbitrum.rpc.tenderly.co/8feb0b06-2fc4-40e2-a043-686d81403e32'
     }
   },
 });

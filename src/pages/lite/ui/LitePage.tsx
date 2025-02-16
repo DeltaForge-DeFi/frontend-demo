@@ -1,258 +1,223 @@
 import { useEffect, useState } from 'react';
-import { useAccount } from 'wagmi';
-import { encodeAbiParameters, parseEther, encodeFunctionData, parseUnits, formatUnits, Address } from 'viem';
-
-import { publicClient, walletClient } from '@/shared/config/wagmi.config';
+import { Address, formatUnits } from 'viem';
+import { ToastContainer, toast, Bounce } from 'react-toastify';
 
 import { Header } from '@/widgets/header';
 import { Button } from '@/shared/ui/Button';
 
-import weth from '@/shared/abi/weth.json';
-import dsProxyJson from '@/shared/abi/ds-proxy.json';
-import shortJson from '@/shared/abi/short.json';
-import gmxReaderJson from '@/shared/abi/gmx-reader.json';
-
-import { openLooping } from '@/pages/lite/ui/openLooping';
 import { APYChart } from './APYChart';
-import { CHAINLINK_ETH_USD_FEED, CHAINLINK_FEED_ABI, closeLooping } from '@/pages/lite/ui/closeLooping';
 import { BadgeDelta } from '@/shared/ui/badge-delta';
+import useWallet from '@/entities/wallet/useWallet';
+import { gmxContract } from '@/entities/gmx/gmx-contract';
+import { aaveContract } from '@/entities/aave/aave-contract';
 
-const EXCHANGE_ROUTER_ADDRESS = '0x900173A66dbD345006C51fA35fA3aB760FcD843b';
-const ROUTER_ADDRESS = '0x7452c558d45f8afC8c83dAe62C3f8A5BE19c71f6';
-const READER_ADDRESS = gmxReaderJson.address as `0x${string}`;
-const ORDER_VAULT_ADDRESS = '0x31eF83a530Fde1B38EE9A18093A333D8Bbbc40D5';
-const DATA_STORE_ADDRESS = '0xFD70de6b91282D8017aA4E741e9Ae325CAb992d8';
-const USDC_ADDRESS = '0xaf88d065e77c8cC2239327C5EDb3A432268e5831';
-const WETH_ADDRESS = '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1';
-const MARKET = '0x70d95587d40A2caf56bd97485aB3Eec10Bee6336';
-const UNISWAP_SWAP_ADDRESS = '0xD8F8c0f418d34aA9B30d29D7Eaf975E4241aa2C2';
 
-async function shortDeposit(address: `0x${string}`, amount: any, dsProxyAddress: any) {
-  console.log('Depositing ETH to DSProxy...');
-  const depositCallData = encodeAbiParameters(
-    [
-      { name: 'user', type: 'address' },
-      { name: 'market', type: 'address' },
-      { name: 'sizeDeltaUsd', type: 'uint256' },
-      { name: 'wethAmount', type: 'uint256' },
-      { name: 'exchangeRouter', type: 'address' },
-      { name: 'reader', type: 'address' },
-      { name: 'USDC', type: 'address' },
-      { name: 'WETH', type: 'address' },
-      { name: 'uniswapSwap', type: 'address' },
-      { name: 'orderVaultAddress', type: 'address' },
-      { name: 'dataStoreAddress', type: 'address' },
-      { name: 'routerAddress', type: 'address' },
-    ],
-    [
-      address,
-      MARKET,
-      parseUnits('3', 30),
-      amount,
-      EXCHANGE_ROUTER_ADDRESS,
-      READER_ADDRESS,
-      USDC_ADDRESS,
-      WETH_ADDRESS,
-      UNISWAP_SWAP_ADDRESS,
-      ORDER_VAULT_ADDRESS,
-      DATA_STORE_ADDRESS,
-      ROUTER_ADDRESS,
-    ],
-  );
-
-  console.log(depositCallData);
-
-  const encodedData = encodeFunctionData({
-    abi: shortJson.abi,
-    functionName: 'createShort',
-    args: [depositCallData],
-  });
-
-  const hash = await walletClient.writeContract({
-    address: dsProxyAddress as `0x${string}`,
-    abi: dsProxyJson.abi,
-    functionName: 'execute',
-    args: [shortJson.adress, encodedData],
-    account: address as `0x${string}`,
-    value: parseEther('0.0005'),
-    gas: 2000000n, // Added gas limit of 1 million units
-  });
-
-  await publicClient.waitForTransactionReceipt({ hash });
-}
-
-// async function aave(address: `0x${string}`) {
-//   const dsProxy = localStorage.getItem('ds_proxy') as `0x${string}`;
-//   const amount = parseEther('0.0001');
-
-//   console.log('Depositing ETH to11111111');
-//   // STEP 1
+// async function shortDeposit(address: `0x${string}`, amount: any, dsProxyAddress: any) {
+//   console.log('Depositing ETH to DSProxy...');
 //   const depositCallData = encodeAbiParameters(
 //     [
-//       { name: 'amount', type: 'uint256' },
-//       { name: 'from', type: 'address' },
-//       { name: 'assetId', type: 'uint16' },
-//       { name: 'enableAsColl', type: 'bool' },
-//       { name: 'useDefaultMarket', type: 'bool' },
-//       { name: 'useOnBehalf', type: 'bool' },
+//       { name: 'user', type: 'address' },
 //       { name: 'market', type: 'address' },
-//       { name: 'onBehalf', type: 'address' },
+//       { name: 'sizeDeltaUsd', type: 'uint256' },
+//       { name: 'collateralAmount', type: 'uint256' },
+//       { name: 'exchangeRouter', type: 'address' },
+//       { name: 'reader', type: 'address' },
+//       { name: 'USDC', type: 'address' },
+//       { name: 'orderVaultAddress', type: 'address' },
+//       { name: 'dataStoreAddress', type: 'address' },
+//       { name: 'routerAddress', type: 'address' },
 //     ],
 //     [
-//       amount,
 //       address,
-//       4, //WETH
-//       false,
-//       true,
-//       false,
-//       '0x0000000000000000000000000000000000000000',
-//       '0x0000000000000000000000000000000000000000',
+//       MARKET,
+//       parseUnits('3', 30),
+//       amount,
+//       EXCHANGE_ROUTER_ADDRESS,
+//       READER_ADDRESS,
+//       USDC_ADDRESS,
+//       ORDER_VAULT_ADDRESS,
+//       DATA_STORE_ADDRESS,
+//       ROUTER_ADDRESS,
 //     ],
 //   );
 
-//   console.log('Depositing ETH to 222222');
-
-//   // STEP 2
 //   const encodedData = encodeFunctionData({
-//     abi: [
-//       {
-//         inputs: [{ type: 'bytes', name: 'data' }],
-//         name: 'executeActionDirect',
-//         outputs: [],
-//         stateMutability: 'payable',
-//         type: 'function',
-//       },
-//     ],
-//     functionName: 'executeActionDirect',
+//     abi: GMX_SHORT_ABI,
+//     functionName: 'createShort',
 //     args: [depositCallData],
 //   });
 
-//   console.log('Depositing ETH to 333');
+//   await dsProxyExecute({
+//     address: address as `0x${string}`,
+//     dsProxyAddress: dsProxyAddress as `0x${string}`,
+//     executeContract: GMX_SHORT_CONTRACT,
+//     executeData: encodedData,
+//     value: parseEther('0.0005'),
+//   }).catch((error) => {
+//     console.error('Ошибка ds proxy execute:', error);
+//     process.exit(1);
+//   });
 
-//   // STEP 3
+//   toast('GMX Short opened', {
+//     position: 'top-left',
+//     autoClose: 5000,
+//     hideProgressBar: false,
+//     closeOnClick: false,
+//     pauseOnHover: true,
+//     draggable: true,
+//     progress: undefined,
+//     theme: 'light',
+//   });
+// }
+
+// async function aaveLooping(address: `0x${string}`) {}
+
+
+// async function deposit(address: `0x${string}`, loopingAmount: string, shortAmount: string) {
+//   const dsProxy = localStorage.getItem('ds_proxy') as `0x${string}`;
+//   const shortAmountEth = parseEther(shortAmount);
+
+//   console.log('Depositing ETH to DSProxy...');
+
+//   // // Transfer ETH to WETH contract
+//   // const hash = await walletClient.sendTransaction({
+//   //   account: address as `0x${string}`,
+//   //   to: weth.address as `0x${string}`,
+//   //   value: shortAmountEth,
+//   // });
+
+//   // await publicClient.waitForTransactionReceipt({ hash });
+
+//   // Approve WETH for the dsProxy
+//   // const approveHash = await walletClient.writeContract({
+//   //   address: weth.address as `0x${string}`,
+//   //   abi: weth.abi,
+//   //   functionName: 'approve',
+//   //   args: [dsProxy, shortAmountEth],
+//   //   account: address as `0x${string}`,
+//   // });
+
+//   // await publicClient.waitForTransactionReceipt({ hash: approveHash });
+
+//   try {
+//     await shortDeposit(address, shortAmountEth, dsProxy);
+//     console.log('ШОРТ открылся');
+//   } catch (error) {
+//     toast.error("GMX doesn't opened", {
+//       position: 'top-left',
+//       autoClose: 5000,
+//       hideProgressBar: false,
+//       closeOnClick: false,
+//       pauseOnHover: true,
+//       draggable: true,
+//       progress: undefined,
+//       theme: 'light',
+//     });
+//     console.log('ШОРТ не открылся');
+//   }
+
+//   try {
+//     // await openLooping(loopingAmount);
+//   } catch (error) {
+//     toast.error("Long doesn't opened", {
+//       position: 'top-left',
+//       autoClose: 5000,
+//       hideProgressBar: false,
+//       closeOnClick: false,
+//       pauseOnHover: true,
+//       draggable: true,
+//       progress: undefined,
+//       theme: 'light',
+//     });
+//   }
+// }
+
+// const convertUSDCtoWETH = (usdcAmount: string, ethPrice: bigint) => {
+//   // Convert the input strings to numbers
+//   const usdcAmountNum = Number(usdcAmount);
+//   const ethPriceNum = Number(formatUnits(ethPrice, 8)); // Assuming formatUnits returns a string
+
+//   console.log('ethPriceNum', ethPriceNum);
+//   console.log('usdcAmountNum', usdcAmountNum);
+//   // Calculate the WETH amount
+//   const wethAmount = (usdcAmountNum / ethPriceNum).toFixed(4); // Use toFixed(4) for WETH precision
+
+//   return wethAmount;
+// };
+
+// async function withdraw(address: `0x${string}`) {
+//   const withdrawCallData = encodeAbiParameters(
+//     [
+//       { name: 'user', type: 'address' },
+//       { name: 'exchangeRouter', type: 'address' },
+//       { name: 'reader', type: 'address' },
+//       { name: 'USDC', type: 'address' },
+//       { name: 'orderVaultAddress', type: 'address' },
+//       { name: 'dataStoreAddress', type: 'address' },
+//       { name: 'routerAddress', type: 'address' },
+//     ],
+//     [address, EXCHANGE_ROUTER_ADDRESS, READER_ADDRESS, USDC_ADDRESS, ORDER_VAULT_ADDRESS, DATA_STORE_ADDRESS, ROUTER_ADDRESS],
+//   );
+
+//   const encodedData = encodeFunctionData({
+//     abi: shortJson.abi,
+//     functionName: 'withdrawShort',
+//     args: [withdrawCallData],
+//   });
+
+//   const dsProxy = localStorage.getItem('ds_proxy');
+//   console.log('Executing withdraw through DSProxy...');
+
 //   const hash = await walletClient.writeContract({
 //     address: dsProxy as `0x${string}`,
 //     abi: dsProxyJson.abi,
 //     functionName: 'execute',
-//     args: ['0x755d8133E1688b071Ec4ac73220eF7f70BC6992F', encodedData],
+//     args: [shortJson.adress, encodedData],
 //     value: parseEther('0.0005'),
 //     account: address as `0x${string}`,
 //   });
 
-//   console.log('Depositing ETH to 4444');
-
 //   await publicClient.waitForTransactionReceipt({ hash });
+//   console.log('Withdrawal short complete');
+//   await closeLooping();
 // }
 
-async function deposit(address: `0x${string}`, loopingAmount: string, shortAmount: string) {
-  const dsProxy = localStorage.getItem('ds_proxy') as `0x${string}`;
-  const shortAmountEth = parseEther(shortAmount);
-
-  console.log('Depositing ETH to DSProxy...');
-
-  // Transfer ETH to WETH contract
-  const hash = await walletClient.sendTransaction({
-    account: address as `0x${string}`,
-    to: weth.address as `0x${string}`,
-    value: shortAmountEth,
-  });
-
-  await publicClient.waitForTransactionReceipt({ hash });
-
-  // Approve WETH for the dsProxy
-  const approveHash = await walletClient.writeContract({
-    address: weth.address as `0x${string}`,
-    abi: weth.abi,
-    functionName: 'approve',
-    args: [dsProxy, shortAmountEth],
-    account: address as `0x${string}`,
-  });
-
-  await publicClient.waitForTransactionReceipt({ hash: approveHash });
-
-  try {
-    await shortDeposit(address, shortAmountEth, dsProxy);
-    console.log('ШОРТ открылся');
-  } catch (error) {
-    console.log('ШОРТ открылсяя');
-  }
-  await openLooping(loopingAmount);
-}
-
-async function withdraw(address: `0x${string}`) {
-  const withdrawCallData = encodeAbiParameters(
-    [
-      { name: 'user', type: 'address' },
-      { name: 'exchangeRouter', type: 'address' },
-      { name: 'reader', type: 'address' },
-      { name: 'USDC', type: 'address' },
-      { name: 'orderVaultAddress', type: 'address' },
-      { name: 'dataStoreAddress', type: 'address' },
-      { name: 'routerAddress', type: 'address' },
-    ],
-    [address, EXCHANGE_ROUTER_ADDRESS, READER_ADDRESS, USDC_ADDRESS, ORDER_VAULT_ADDRESS, DATA_STORE_ADDRESS, ROUTER_ADDRESS],
-  );
-
-  const encodedData = encodeFunctionData({
-    abi: shortJson.abi,
-    functionName: 'withdrawShort',
-    args: [withdrawCallData],
-  });
-
-  const dsProxy = localStorage.getItem('ds_proxy');
-  console.log('Executing withdraw through DSProxy...');
-
-  const hash = await walletClient.writeContract({
-    address: dsProxy as `0x${string}`,
-    abi: dsProxyJson.abi,
-    functionName: 'execute',
-    args: [shortJson.adress, encodedData],
-    value: parseEther('0.0005'),
-    account: address as `0x${string}`,
-  });
-
-  await publicClient.waitForTransactionReceipt({ hash });
-  console.log('Withdrawal short complete');
-  await closeLooping();
-}
-
 export const LitePage = () => {
-  const { isConnected, address } = useAccount();
-  const [dsPrxoy, setDsProxy] = useState('0x32fa5955d68F99856661D806192fB3185Ed61F05');
-
-  useEffect(() => {
-    const dsProxy = localStorage.getItem('ds_proxy') as `0x${string}`;
-    setDsProxy(dsProxy || '');
-  }, []);
+  const { active: isConnected, account: address, dsProxyAddress } = useWallet();
 
   const [amount, setAmount] = useState('');
   const [longAmount, setLongAmount] = useState('');
   const [shortAmount, setShortAmount] = useState('');
   const [aby, setAby] = useState(10);
+  const [longStatus, setLongStatus] = useState(false);
+  const [shortStatus, setShortStatus] = useState(false);
 
-  // const handleOpenModal = () => setIsModalOpen(true);
-  // const handleCloseModal = () => setIsModalOpen(false);
-
-  const [ethPrice, setEthPrice] = useState<bigint>(0n);
 
   useEffect(() => {
-    const fetchPrice = async () => {
-      const [_, price] = (await publicClient.readContract({
-        address: CHAINLINK_ETH_USD_FEED,
-        abi: CHAINLINK_FEED_ABI,
-        functionName: 'latestRoundData',
-      })) as any;
-      setEthPrice(price);
-    };
+    if (!dsProxyAddress) return
 
-    fetchPrice();
-    const interval = setInterval(fetchPrice, 5 * 60 * 1000);
-    return () => clearInterval(interval);
-  }, []);
+    const readPositions = async () => {
+      console.log('readPositions');
+      const gmx = await gmxContract.readPositon(dsProxyAddress as Address);
+      const aave = await aaveContract.readPositon(dsProxyAddress as Address);
+
+      const aaveHealthFactor =  formatUnits(aave.healthFactor, 18) 
+
+      console.log('gmx', gmx)
+      console.log('aave', aaveHealthFactor)
+
+      setLongStatus(0 < Number(aaveHealthFactor) && 10 > Number(aaveHealthFactor))
+      setShortStatus(false)
+    }
+
+    readPositions()
+  }, [dsProxyAddress])
 
   const handleConfirm = async () => {
-    await deposit(address as Address, longAmount, shortAmount);
-    // handleCloseModal();
+    if (!address || !dsProxyAddress) return
+
+    await gmxContract.createShort({ account: address as any, dsProxyAddress: dsProxyAddress as Address });
+    await aaveContract.openLoooping({ account: address as any, dsProxyAddress: dsProxyAddress as Address });
   };
 
   const onChange = async (e: any) => {
@@ -268,7 +233,7 @@ export const LitePage = () => {
     setShortAmount(shortValue);
 
     try {
-      const response = await fetch('http://localhost:3001/stub', {
+      const response = await fetch('http://150.241.107.169:3009/calculateStrategy', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -288,6 +253,11 @@ export const LitePage = () => {
     }
   };
 
+  const withdraw = async () => {
+      // await gmxContract.withdrawShort({ address: address as any, dsProxyAddress: dsProxyAddress as Address });
+      await aaveContract.openLoooping({ account: address as any, dsProxyAddress: dsProxyAddress as Address });
+  }
+
   if (!isConnected || !address) {
     return (
       <div className="container mx-auto">
@@ -303,56 +273,80 @@ export const LitePage = () => {
     <div className="container mx-auto">
       <Header />
       <div className="flex min-h-screen w-full flex-col justify-between">
-        <div className="flex min-h-screen w-full flex-1">
-          <div className="flex flex-1 items-center justify-center">
-            <div className="flex flex-col gap-5">
-              <div>
-                <h2 className="mb-4 text-lg font-semibold text-white">Enter Deposit Amount</h2>
-                <input
-                  type="number"
-                  value={amount}
-                  onChange={onChange}
-                  className="mb-4 w-full rounded border bg-gray-900 p-2 text-white"
-                  placeholder="Amount in USDC"
-                />
-                {
-                  <div className="mb-4">
-                    <label className="mb-2 block text-white">
-                      Long:{' '}
-                      {longAmount
-                        ? `${Number(longAmount).toFixed(4)} USDC ~ $${(Number(longAmount) * Number(formatUnits(ethPrice, 8))).toFixed(2)}`
-                        : '---'}
-                    </label>
-                    <label className="mb-2 block text-white">
-                      Short:{' '}
-                      {shortAmount
-                        ? `${Number(shortAmount).toFixed(4)} USDC ~ $${(Number(shortAmount) * Number(formatUnits(ethPrice, 8))).toFixed(2)}`
-                        : '---'}
-                    </label>
-                  </div>
-                }
-                <Button variant="outline" onClick={calculate} className="mr-4">
-                  Calculate
-                </Button>
-                <Button variant="outline" onClick={handleConfirm}>
-                  Confirm
-                </Button>
-              </div>
+        <div className='flex justify-center items-left flex-col'>
+          <div>[Debug] Status:</div>
+          <div>Short: {shortStatus ? 'active' : '-'}</div>
+          <div>Long: {longStatus ? 'active' : '-'}</div>
+        </div>
+        <div className="flex-row w-full">
+          {longStatus || shortStatus ? (
+            <div>
               <Button variant="outline" onClick={async () => await withdraw(address)}>
                 Withdraw
               </Button>
             </div>
-          </div>
-          <div className="flex flex-1 flex-col items-center justify-center">
-            <APYChart yearlyAPY={aby} />
-            <div>
-              <BadgeDelta variant="solid" deltaType="increase" iconStyle="line" value="9.3%" className="mr-3" />
-              <BadgeDelta variant="solid" deltaType="decrease" iconStyle="line" value="1.9%" className="mr-3" />
-              <BadgeDelta variant="solid" deltaType="neutral" iconStyle="line" value="0.6%" />
+          ) : (
+            <div className="flex items-center justify-center">
+              <div className="flex flex-col gap-5">
+                <div>
+                  <h2 className="mb-4 text-lg font-semibold text-white">Enter Deposit Amount</h2>
+                  <div className='flex flex-row'>
+                    <input
+                      type="number"
+                      value={amount}
+                      onChange={onChange}
+                      className="mb-4 w-full rounded border bg-gray-900 p-2 text-white"
+                      placeholder="Amount in USDC"
+                    />
+                    <Button variant="outline" onClick={calculate} className="mr-4 ml-5">
+                      Calculate
+                    </Button>
+                  </div>
+
+                  {
+                    <div className="mb-4">
+                      <label className="mb-2 block text-white">
+                        Long: {longAmount ? `${Number(longAmount).toFixed(4)} USDC` : '---'}
+                      </label>
+                      <label className="mb-2 block text-white">
+                        Short: {shortAmount ? `${Number(shortAmount).toFixed(4)} USDC` : '---'}
+                      </label>
+                    </div>
+                  }
+
+                  <Button variant="outline" onClick={handleConfirm}>
+                    Confirm
+                  </Button>
+                </div>
+              </div >
+            </div >
+          )}
+          <div>
+            <div className="flex flex-1 flex-col items-center justify-center">
+              <APYChart yearlyAPY={aby} />
+              <div>
+                <BadgeDelta variant="solid" deltaType="increase" iconStyle="line" value="9.3%" className="mr-3" />
+                <BadgeDelta variant="solid" deltaType="decrease" iconStyle="line" value="1.9%" className="mr-3" />
+                <BadgeDelta variant="solid" deltaType="neutral" iconStyle="line" value="0.6%" />
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    </div>
+        <ToastContainer
+          position="top-right"
+          autoClose={5000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick={false}
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="light"
+          transition={Bounce}
+        />
+
+      </div >
+    </div >
   );
 };
