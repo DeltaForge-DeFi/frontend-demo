@@ -347,6 +347,26 @@ export const AAVE_POOL_ABI = [
   },
 ];
 
+
+export const AAVE_CLOSE_LOOPING_ADDRESS =
+  "0x5A86dC64ee2499f7d3a99d270082a9fb43a08326";
+
+export const AAVE_CLOSE_LOOPING_ABI = [
+  {
+    inputs: [
+      {
+        internalType: "bytes",
+        name: "_callData",
+        type: "bytes",
+      },
+    ],
+    name: "executeActionDirect",
+    outputs: [],
+    stateMutability: "payable",
+    type: "function",
+  },
+];
+
 export const aaveContract = {
   async readPositon(dsProxyAddress: Address) {
     const pool = (await publicClient.readContract({
@@ -415,6 +435,54 @@ export const aaveContract = {
     })
   },
 
-  //   async closeLoooping({ dsProxyAddress, account }: { dsProxyAddress: Address, account: Address }) {
-  // }
+  async closeLoooping({ dsProxyAddress, account }: { dsProxyAddress: Address, account: Address }) {
+
+    const DEFAULT_AAVE_MARKET =
+      "0xa97684ead0e402dC232d5A977953DF7ECBaB3CDb" as Address;
+    const MaxUint256 = BigInt(
+      "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+    );
+
+    const params = {
+      assetId: 0,
+      useDefaultMarket: true,
+      amount: MaxUint256,
+      to: account,
+      market: DEFAULT_AAVE_MARKET,
+    };
+
+    const parameters = {
+      functionName: "executeActionDirect",
+      abi: AAVE_CLOSE_LOOPING_ABI,
+      args: [
+        encodeAbiParameters(
+          [
+            { name: "assetId", type: "uint16" },
+            { name: "useDefaultMarket", type: "bool" },
+            { name: "amount", type: "uint256" },
+            { name: "to", type: "address" },
+            { name: "market", type: "address" },
+          ],
+          [
+            params.assetId,
+            params.useDefaultMarket,
+            params.amount,
+            params.to,
+            params.market,
+          ],
+        ),
+      ],
+    };
+
+    const executeData = encodeFunctionData(parameters);
+
+    const status = await DsProxy.execute({
+      address: account as any,
+      dsProxyAddress,
+      executeContract: AAVE_CLOSE_LOOPING_ADDRESS as Address,
+      executeData,
+    })
+
+    if (status ===  'reverted') { /* empty */ }
+  }
 }

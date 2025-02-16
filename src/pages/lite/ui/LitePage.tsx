@@ -254,8 +254,8 @@ export const LitePage = () => {
   };
 
   const withdraw = async () => {
-      // await gmxContract.withdrawShort({ address: address as any, dsProxyAddress: dsProxyAddress as Address });
-      await aaveContract.openLoooping({ account: address as any, dsProxyAddress: dsProxyAddress as Address });
+      await gmxContract.withdrawShort({ address: address as any, dsProxyAddress: dsProxyAddress as Address });
+      await aaveContract.closeLoooping({ account: address as any, dsProxyAddress: dsProxyAddress as Address });
   }
 
   if (!isConnected || !address) {
@@ -302,7 +302,6 @@ export const LitePage = () => {
                       Calculate
                     </Button>
                   </div>
-
                   {
                     <div className="mb-4">
                       <label className="mb-2 block text-white">
@@ -313,7 +312,6 @@ export const LitePage = () => {
                       </label>
                     </div>
                   }
-
                   <Button variant="outline" onClick={handleConfirm}>
                     Confirm
                   </Button>
@@ -345,7 +343,6 @@ export const LitePage = () => {
           theme="light"
           transition={Bounce}
         />
-
       </div >
     </div >
   );

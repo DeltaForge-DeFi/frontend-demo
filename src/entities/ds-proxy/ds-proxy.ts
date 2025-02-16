@@ -75,5 +75,7 @@ export const DsProxy = {
         const result = await publicClient.waitForTransactionReceipt({ hash });
         //result.status = reverted
         console.log('result', result)
+
+        return result.status;
     },
 }
