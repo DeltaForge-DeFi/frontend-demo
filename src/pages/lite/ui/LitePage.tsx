@@ -33,7 +33,7 @@ export const LitePage = () => {
   const [longAmount, setLongAmount] = useState('');
   const [shortAmount, setShortAmount] = useState('');
   const [aby, setAby] = useState(10);
-  const [longStatus, setLongStatus] = useState(true);
+  const [longStatus, setLongStatus] = useState(false);
   const [shortStatus, setShortStatus] = useState(false);
 
 
@@ -45,12 +45,11 @@ export const LitePage = () => {
       const gmx = await gmxContract.readPositon(dsProxyAddress as Address);
       const aave = await aaveContract.readPositon(dsProxyAddress as Address);
 
-      const totalCollateralBase =  formatUnits(aave.totalCollateralBase, 18) 
-
       console.log('gmx', gmx)
-      console.log('aave', totalCollateralBase)
+      console.log('aave', formatUnits(aave.healthFactor, 18))
 
-      setLongStatus(0 > Number(totalCollateralBase))
+      const aaveHealthFactor =  formatUnits(aave.healthFactor, 18) 
+      setLongStatus(0 < Number(aaveHealthFactor) && 10 > Number(aaveHealthFactor))
       setShortStatus(gmx?.length > 0)
     }
 
@@ -63,10 +62,11 @@ export const LitePage = () => {
     const gmxAmount = parseUnits(shortAmount, 6);
     const aaveAmount = parseUnits(longAmount, 6);
 
+    //TODO: check balance
     await checkAndApprove(address, ContractAddresses.USDC, dsProxyAddress, gmxAmount + aaveAmount);
 
     await gmxContract.createShort({ account: address as any, amount: gmxAmount, dsProxyAddress: dsProxyAddress as Address });
-    await aaveContract.openLoooping({ account: address as any, dsProxyAddress: dsProxyAddress as Address });
+    await aaveContract.openLoooping({ account: address as any, amount: aaveAmount, dsProxyAddress: dsProxyAddress as Address });
   };
 
   const onChange = async (e: any) => {

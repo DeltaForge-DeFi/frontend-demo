@@ -68,7 +68,7 @@ export const DsProxy = {
             args: [executeContract, executeData],
             account: address as `0x${string}`,
             value,
-            gas: 2000000n, // Added gas limit of 1 million units gas: 8000000n,
+            gas: 8000000n, // Added gas limit of 1 million units gas: 8000000n,
         });
 
         const result = await publicClient.waitForTransactionReceipt({ hash });

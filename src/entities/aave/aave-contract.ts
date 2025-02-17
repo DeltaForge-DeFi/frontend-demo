@@ -403,8 +403,8 @@ export const aaveContract = {
   },
 
 
-  async openLoooping({ dsProxyAddress, account }: { dsProxyAddress: Address, account: Address }) {
-    const initialAmount = parseUnits("1", 6);
+  async openLoooping({ dsProxyAddress, account, amount }: { amount: bigint, dsProxyAddress: Address, account: Address }) {
+    const initialAmount = amount;
 
     const callData = encodeAbiParameters(
       [
