@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Address, formatUnits } from 'viem';
-import { ToastContainer, toast, Bounce } from 'react-toastify';
+import { Address, formatUnits, parseUnits } from 'viem';
+import { ToastContainer, Bounce } from 'react-toastify';
 
 import { Header } from '@/widgets/header';
 import { Button } from '@/shared/ui/Button';
@@ -10,177 +10,21 @@ import { BadgeDelta } from '@/shared/ui/badge-delta';
 import useWallet from '@/entities/wallet/useWallet';
 import { gmxContract } from '@/entities/gmx/gmx-contract';
 import { aaveContract } from '@/entities/aave/aave-contract';
+import { ContractAddresses } from '@/shared/constants/contracts/addresses';
+import { checkAndApprove } from '@/shared/lib/approve';
 
 
-// async function shortDeposit(address: `0x${string}`, amount: any, dsProxyAddress: any) {
-//   console.log('Depositing ETH to DSProxy...');
-//   const depositCallData = encodeAbiParameters(
-//     [
-//       { name: 'user', type: 'address' },
-//       { name: 'market', type: 'address' },
-//       { name: 'sizeDeltaUsd', type: 'uint256' },
-//       { name: 'collateralAmount', type: 'uint256' },
-//       { name: 'exchangeRouter', type: 'address' },
-//       { name: 'reader', type: 'address' },
-//       { name: 'USDC', type: 'address' },
-//       { name: 'orderVaultAddress', type: 'address' },
-//       { name: 'dataStoreAddress', type: 'address' },
-//       { name: 'routerAddress', type: 'address' },
-//     ],
-//     [
-//       address,
-//       MARKET,
-//       parseUnits('3', 30),
-//       amount,
-//       EXCHANGE_ROUTER_ADDRESS,
-//       READER_ADDRESS,
-//       USDC_ADDRESS,
-//       ORDER_VAULT_ADDRESS,
-//       DATA_STORE_ADDRESS,
-//       ROUTER_ADDRESS,
-//     ],
-//   );
+const RedIndicator = () => {
+  return (
+    <span className="ml-2 w-2 h-2 bg-red-500 rounded-full flex items-center justify-center"></span>
+  )
+}
 
-//   const encodedData = encodeFunctionData({
-//     abi: GMX_SHORT_ABI,
-//     functionName: 'createShort',
-//     args: [depositCallData],
-//   });
-
-//   await dsProxyExecute({
-//     address: address as `0x${string}`,
-//     dsProxyAddress: dsProxyAddress as `0x${string}`,
-//     executeContract: GMX_SHORT_CONTRACT,
-//     executeData: encodedData,
-//     value: parseEther('0.0005'),
-//   }).catch((error) => {
-//     console.error('Ошибка ds proxy execute:', error);
-//     process.exit(1);
-//   });
-
-//   toast('GMX Short opened', {
-//     position: 'top-left',
-//     autoClose: 5000,
-//     hideProgressBar: false,
-//     closeOnClick: false,
-//     pauseOnHover: true,
-//     draggable: true,
-//     progress: undefined,
-//     theme: 'light',
-//   });
-// }
-
-// async function aaveLooping(address: `0x${string}`) {}
-
-
-// async function deposit(address: `0x${string}`, loopingAmount: string, shortAmount: string) {
-//   const dsProxy = localStorage.getItem('ds_proxy') as `0x${string}`;
-//   const shortAmountEth = parseEther(shortAmount);
-
-//   console.log('Depositing ETH to DSProxy...');
-
-//   // // Transfer ETH to WETH contract
-//   // const hash = await walletClient.sendTransaction({
-//   //   account: address as `0x${string}`,
-//   //   to: weth.address as `0x${string}`,
-//   //   value: shortAmountEth,
-//   // });
-
-//   // await publicClient.waitForTransactionReceipt({ hash });
-
-//   // Approve WETH for the dsProxy
-//   // const approveHash = await walletClient.writeContract({
-//   //   address: weth.address as `0x${string}`,
-//   //   abi: weth.abi,
-//   //   functionName: 'approve',
-//   //   args: [dsProxy, shortAmountEth],
-//   //   account: address as `0x${string}`,
-//   // });
-
-//   // await publicClient.waitForTransactionReceipt({ hash: approveHash });
-
-//   try {
-//     await shortDeposit(address, shortAmountEth, dsProxy);
-//     console.log('ШОРТ открылся');
-//   } catch (error) {
-//     toast.error("GMX doesn't opened", {
-//       position: 'top-left',
-//       autoClose: 5000,
-//       hideProgressBar: false,
-//       closeOnClick: false,
-//       pauseOnHover: true,
-//       draggable: true,
-//       progress: undefined,
-//       theme: 'light',
-//     });
-//     console.log('ШОРТ не открылся');
-//   }
-
-//   try {
-//     // await openLooping(loopingAmount);
-//   } catch (error) {
-//     toast.error("Long doesn't opened", {
-//       position: 'top-left',
-//       autoClose: 5000,
-//       hideProgressBar: false,
-//       closeOnClick: false,
-//       pauseOnHover: true,
-//       draggable: true,
-//       progress: undefined,
-//       theme: 'light',
-//     });
-//   }
-// }
-
-// const convertUSDCtoWETH = (usdcAmount: string, ethPrice: bigint) => {
-//   // Convert the input strings to numbers
-//   const usdcAmountNum = Number(usdcAmount);
-//   const ethPriceNum = Number(formatUnits(ethPrice, 8)); // Assuming formatUnits returns a string
-
-//   console.log('ethPriceNum', ethPriceNum);
-//   console.log('usdcAmountNum', usdcAmountNum);
-//   // Calculate the WETH amount
-//   const wethAmount = (usdcAmountNum / ethPriceNum).toFixed(4); // Use toFixed(4) for WETH precision
-
-//   return wethAmount;
-// };
-
-// async function withdraw(address: `0x${string}`) {
-//   const withdrawCallData = encodeAbiParameters(
-//     [
-//       { name: 'user', type: 'address' },
-//       { name: 'exchangeRouter', type: 'address' },
-//       { name: 'reader', type: 'address' },
-//       { name: 'USDC', type: 'address' },
-//       { name: 'orderVaultAddress', type: 'address' },
-//       { name: 'dataStoreAddress', type: 'address' },
-//       { name: 'routerAddress', type: 'address' },
-//     ],
-//     [address, EXCHANGE_ROUTER_ADDRESS, READER_ADDRESS, USDC_ADDRESS, ORDER_VAULT_ADDRESS, DATA_STORE_ADDRESS, ROUTER_ADDRESS],
-//   );
-
-//   const encodedData = encodeFunctionData({
-//     abi: shortJson.abi,
-//     functionName: 'withdrawShort',
-//     args: [withdrawCallData],
-//   });
-
-//   const dsProxy = localStorage.getItem('ds_proxy');
-//   console.log('Executing withdraw through DSProxy...');
-
-//   const hash = await walletClient.writeContract({
-//     address: dsProxy as `0x${string}`,
-//     abi: dsProxyJson.abi,
-//     functionName: 'execute',
-//     args: [shortJson.adress, encodedData],
-//     value: parseEther('0.0005'),
-//     account: address as `0x${string}`,
-//   });
-
-//   await publicClient.waitForTransactionReceipt({ hash });
-//   console.log('Withdrawal short complete');
-//   await closeLooping();
-// }
+const GreenIndicator = () => {
+  return (
+    <span className="ml-2 w-2 h-2 bg-green-500 rounded-full flex items-center justify-center"></span>
+  )
+}
 
 export const LitePage = () => {
   const { active: isConnected, account: address, dsProxyAddress } = useWallet();
@@ -189,34 +33,39 @@ export const LitePage = () => {
   const [longAmount, setLongAmount] = useState('');
   const [shortAmount, setShortAmount] = useState('');
   const [aby, setAby] = useState(10);
-  const [longStatus, setLongStatus] = useState(false);
+  const [longStatus, setLongStatus] = useState(true);
   const [shortStatus, setShortStatus] = useState(false);
 
 
-  useEffect(() => {
-    if (!dsProxyAddress) return
+  // useEffect(() => {
+  //   if (!dsProxyAddress) return
 
-    const readPositions = async () => {
-      console.log('readPositions');
-      const gmx = await gmxContract.readPositon(dsProxyAddress as Address);
-      const aave = await aaveContract.readPositon(dsProxyAddress as Address);
+  //   const readPositions = async () => {
+  //     console.log('readPositions');
+  //     const gmx = await gmxContract.readPositon(dsProxyAddress as Address);
+  //     const aave = await aaveContract.readPositon(dsProxyAddress as Address);
 
-      const aaveHealthFactor =  formatUnits(aave.healthFactor, 18) 
+  //     const totalCollateralBase =  formatUnits(aave.totalCollateralBase, 18) 
 
-      console.log('gmx', gmx)
-      console.log('aave', aaveHealthFactor)
+  //     console.log('gmx', gmx)
+  //     console.log('aave', totalCollateralBase)
 
-      setLongStatus(0 < Number(aaveHealthFactor) && 10 > Number(aaveHealthFactor))
-      setShortStatus(false)
-    }
+  //     setLongStatus(0 > Number(totalCollateralBase))
+  //     setShortStatus(gmx?.length > 0)
+  //   }
 
-    readPositions()
-  }, [dsProxyAddress])
+  //   readPositions()
+  // }, [dsProxyAddress])
 
   const handleConfirm = async () => {
     if (!address || !dsProxyAddress) return
 
-    await gmxContract.createShort({ account: address as any, dsProxyAddress: dsProxyAddress as Address });
+    const gmxAmount = parseUnits(shortAmount, 6);
+    const aaveAmount = parseUnits(longAmount, 6);
+
+    await checkAndApprove(address, ContractAddresses.USDC, dsProxyAddress, gmxAmount + aaveAmount);
+
+    await gmxContract.createShort({ account: address as any, amount: gmxAmount, dsProxyAddress: dsProxyAddress as Address });
     await aaveContract.openLoooping({ account: address as any, dsProxyAddress: dsProxyAddress as Address });
   };
 
@@ -273,15 +122,16 @@ export const LitePage = () => {
     <div className="container mx-auto">
       <Header />
       <div className="flex min-h-screen w-full flex-col justify-between">
-        <div className='flex justify-center items-left flex-col'>
-          <div>[Debug] Status:</div>
-          <div>Short: {shortStatus ? 'active' : '-'}</div>
-          <div>Long: {longStatus ? 'active' : '-'}</div>
+        <div className='flex justify-center items-center flex-col w-full '>
+          <div className='flex flex-row items-center border border-white p-2'>
+            <div className='flex flex-row items-center mr-3'>Short {shortStatus ?(<GreenIndicator/>) : (<RedIndicator/>)}</div>
+            <div className='flex flex-row items-center'>Long: {longStatus ? (<GreenIndicator/>) : (<RedIndicator/>)}</div>
+          </div>
         </div>
         <div className="flex-row w-full">
           {longStatus || shortStatus ? (
-            <div>
-              <Button variant="outline" onClick={async () => await withdraw(address)}>
+            <div className='flex justify-center mb-20'>
+              <Button variant="outline" onClick={async () => await withdraw()}>
                 Withdraw
               </Button>
             </div>

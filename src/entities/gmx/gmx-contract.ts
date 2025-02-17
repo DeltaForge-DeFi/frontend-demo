@@ -146,20 +146,19 @@ export const gmxContract = {
       args: [DATA_STORE_ADDRESS, dsProxyAddress, 0n, 100n],
     });
 
-    return readResult
+    return readResult as any[];
   },
 
   async createShort({
+    amount,
     account,
     dsProxyAddress,
   }: {
+    amount: bigint,
     dsProxyAddress: Address,
     account: Address
   }) {
-    const amount = parseUnits("2", 6);
     const value = parseEther("0.0005");
-  
-    await approve(account,  ContractAddresses.USDC, dsProxyAddress, parseUnits("2", 6));
 
     const depositCallData = encodeAbiParameters(
       [
@@ -194,13 +193,37 @@ export const gmxContract = {
       args: [depositCallData],
     });
   
-    await DsProxy.execute({
+    const status = await DsProxy.execute({
       address: account,
       dsProxyAddress,
       executeContract: gmxShort.address as Address,
       executeData,
       value,
     })
+
+    if (status === 'success') {
+      toast.success("Short is opened", {
+        position: 'top-left',
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: false,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: 'dark',
+      });
+    } else {
+      toast.error("Short is error", {
+        position: 'top-left',
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: false,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: 'dark',
+      });
+    }
   },
 
   async withdrawShort({dsProxyAddress, address}: {

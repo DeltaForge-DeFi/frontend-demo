@@ -71,10 +71,9 @@ export const DsProxy = {
             gas: 2000000n, // Added gas limit of 1 million units gas: 8000000n,
         });
 
-        console.log('DS proxy', hash)
         const result = await publicClient.waitForTransactionReceipt({ hash });
-        //result.status = reverted
-        console.log('result', result)
+
+        console.log('status', result)
 
         return result.status;
     },

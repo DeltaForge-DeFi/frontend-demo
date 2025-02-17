@@ -3,6 +3,7 @@ import { ContractAddresses } from "@/shared/constants/contracts/addresses";
 import { approve } from "@/shared/lib/approve";
 import { Address, encodeAbiParameters, encodeFunctionData, parseUnits } from "viem";
 import { DsProxy } from "../ds-proxy/ds-proxy";
+import { toast } from "react-toastify";
 
 
 export const AAVE_OPEN_LOOPING_CONTRACT =
@@ -391,7 +392,6 @@ export const aaveContract = {
       args: [dsProxyAddress],
     })) as any;
 
-
     return {
       totalCollateralBase,
       totalDebtBase,
@@ -405,8 +405,6 @@ export const aaveContract = {
 
   async openLoooping({ dsProxyAddress, account }: { dsProxyAddress: Address, account: Address }) {
     const initialAmount = parseUnits("1", 6);
-
-    // await approve(account, ContractAddresses.USDC, dsProxyAddress, initialAmount);
 
     const callData = encodeAbiParameters(
       [
@@ -427,12 +425,36 @@ export const aaveContract = {
       args: [callData],
     });
 
-    await DsProxy.execute({
+   const status = await DsProxy.execute({
       address: account as any,
       dsProxyAddress,
       executeContract: AAVE_OPEN_LOOPING_CONTRACT,
       executeData,
     })
+
+    if (status === 'success') {
+      toast.success("Long is opened", {
+        position: 'top-left',
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: false,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: 'dark',
+      });
+    } else {
+      toast.error("Long is error", {
+        position: 'top-left',
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: false,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: 'dark',
+      });
+    }
   },
 
   async closeLoooping({ dsProxyAddress, account }: { dsProxyAddress: Address, account: Address }) {

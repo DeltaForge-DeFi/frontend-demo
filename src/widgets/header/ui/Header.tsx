@@ -17,6 +17,11 @@ export const Header: React.FC = () => {
         <NavHeader />
       </div>
       <div className="flex items-center justify-center">
+        {/* <Link to="/">
+          <div className="mr-left">
+            <span className="block cursor-pointer px-3 py-1.5 text-sm uppercase text-white mix-blend-difference md:px-5 md:py-3">profile</span>
+          </div>
+        </Link> */}
         <ConnectWallet />
       </div>
     </div>
