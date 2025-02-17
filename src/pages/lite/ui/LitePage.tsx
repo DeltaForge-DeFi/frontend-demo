@@ -37,25 +37,25 @@ export const LitePage = () => {
   const [shortStatus, setShortStatus] = useState(false);
 
 
-  // useEffect(() => {
-  //   if (!dsProxyAddress) return
+  useEffect(() => {
+    if (!dsProxyAddress) return
 
-  //   const readPositions = async () => {
-  //     console.log('readPositions');
-  //     const gmx = await gmxContract.readPositon(dsProxyAddress as Address);
-  //     const aave = await aaveContract.readPositon(dsProxyAddress as Address);
+    const readPositions = async () => {
+      console.log('readPositions');
+      const gmx = await gmxContract.readPositon(dsProxyAddress as Address);
+      const aave = await aaveContract.readPositon(dsProxyAddress as Address);
 
-  //     const totalCollateralBase =  formatUnits(aave.totalCollateralBase, 18) 
+      const totalCollateralBase =  formatUnits(aave.totalCollateralBase, 18) 
 
-  //     console.log('gmx', gmx)
-  //     console.log('aave', totalCollateralBase)
+      console.log('gmx', gmx)
+      console.log('aave', totalCollateralBase)
 
-  //     setLongStatus(0 > Number(totalCollateralBase))
-  //     setShortStatus(gmx?.length > 0)
-  //   }
+      setLongStatus(0 > Number(totalCollateralBase))
+      setShortStatus(gmx?.length > 0)
+    }
 
-  //   readPositions()
-  // }, [dsProxyAddress])
+    readPositions()
+  }, [dsProxyAddress])
 
   const handleConfirm = async () => {
     if (!address || !dsProxyAddress) return
