@@ -1,5 +1,5 @@
 import { publicClient, walletClient } from "@/shared/config/wagmi.config";
-import { Account, Address } from "viem";
+import { Address } from "viem";
 
 import DsProxyFactory from '@/shared/constants/contracts/abi/ds-proxy-factory.json'
 import DsProxyJson from '@/shared/constants/contracts/abi/ds-proxy.abi.json'
@@ -43,7 +43,7 @@ export const DsProxy = {
         return data;
     },
 
-    async build(address: Account) {
+    async build(address: Address) {
         const data = await walletClient.writeContract({
             address: DsProxyFactory.adress as Address,
             abi: DsProxyFactory.abi,

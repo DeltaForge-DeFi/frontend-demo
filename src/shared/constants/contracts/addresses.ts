@@ -16,3 +16,8 @@ export const ContractAddresses = {
     // Other Contracts
     UNISWAP_SWAP: '0xD8F8c0f418d34aA9B30d29D7Eaf975E4241aa2C2' as const,
 } as const;
+
+export const TokenDecimals = {
+    [ContractAddresses.USDC]: 6,
+    [ContractAddresses.WETH]: 18,
+} as const;
