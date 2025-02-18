@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Address, formatUnits, parseUnits } from 'viem';
-import { ToastContainer, Bounce } from 'react-toastify';
+import { ToastContainer, Bounce, toast } from 'react-toastify';
 
 import { Header } from '@/widgets/header';
 import { Button } from '@/shared/ui/Button';
@@ -12,19 +12,9 @@ import { gmxContract } from '@/entities/gmx/gmx-contract';
 import { aaveContract } from '@/entities/aave/aave-contract';
 import { ContractAddresses } from '@/shared/constants/contracts/addresses';
 import { checkAndApprove } from '@/shared/lib/approve';
+import { GreenIndicator, RedIndicator } from '@/shared/ui/indecators';
+import { hasEnoughBalance } from '@/shared/lib/hasEnoughBalance';
 
-
-const RedIndicator = () => {
-  return (
-    <span className="ml-2 w-2 h-2 bg-red-500 rounded-full flex items-center justify-center"></span>
-  )
-}
-
-const GreenIndicator = () => {
-  return (
-    <span className="ml-2 w-2 h-2 bg-green-500 rounded-full flex items-center justify-center"></span>
-  )
-}
 
 export const LitePage = () => {
   const { active: isConnected, account: address, dsProxyAddress } = useWallet();
@@ -62,8 +52,23 @@ export const LitePage = () => {
     const gmxAmount = parseUnits(shortAmount, 6);
     const aaveAmount = parseUnits(longAmount, 6);
 
-    //TODO: check balance
-    await checkAndApprove(address, ContractAddresses.USDC, dsProxyAddress, gmxAmount + aaveAmount);
+    const totalAmount = gmxAmount + aaveAmount;
+
+    const isEnoughBalance = await hasEnoughBalance(ContractAddresses.USDC, Number(formatUnits(totalAmount, 6)), address);
+    if (!isEnoughBalance) {
+      toast.error("Insufficient USDC", {
+        position: 'top-left',
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: false,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: 'dark',
+      });
+      return
+    };
+    await checkAndApprove(address, ContractAddresses.USDC, dsProxyAddress, totalAmount);
 
     await gmxContract.createShort({ account: address as any, amount: gmxAmount, dsProxyAddress: dsProxyAddress as Address });
     await aaveContract.openLoooping({ account: address as any, amount: aaveAmount, dsProxyAddress: dsProxyAddress as Address });
@@ -124,7 +129,7 @@ export const LitePage = () => {
       <div className="flex min-h-screen w-full flex-col justify-between">
         <div className='flex justify-center items-center flex-col w-full '>
           <div className='flex flex-row items-center border border-white p-2'>
-            <div className='flex flex-row items-center mr-3'>Short {shortStatus ?(<GreenIndicator/>) : (<RedIndicator/>)}</div>
+            <div className='flex flex-row items-center mr-3'>Short: {shortStatus ?(<GreenIndicator/>) : (<RedIndicator/>)}</div>
             <div className='flex flex-row items-center'>Long: {longStatus ? (<GreenIndicator/>) : (<RedIndicator/>)}</div>
           </div>
         </div>

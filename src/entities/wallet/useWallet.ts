@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { UseWalletClientReturnType, useAccount, useConnectorClient, useWalletClient } from "wagmi";
 import { DsProxy } from "../ds-proxy/ds-proxy";
-import { Address } from "viem";
+import { Address, isAddress } from "viem";
+import { isZeroAddress } from "@/shared/lib/isZeroAddress";
 
 export type WalletClient = UseWalletClientReturnType["data"];
 
@@ -16,7 +17,7 @@ export default function useWallet() {
         if (!isConnected || !address) return;
 
         const storedProxy = localStorage.getItem('ds_proxy');
-        if (storedProxy) {
+        if (storedProxy && isAddress(storedProxy)) {
             setDsProxyAddress(storedProxy as Address);
             return;
         }
@@ -24,10 +25,12 @@ export default function useWallet() {
         const readDsProxy = async () => {
             let proxyAddress: string | null = await DsProxy.read(address) as string | null;
 
-            if (!proxyAddress) {
-                //@ts-ignore
-                proxyAddress = await DsProxy.build(address)
+            if (!proxyAddress || isZeroAddress(proxyAddress)) {
+                await DsProxy.build(address)
+                proxyAddress = await DsProxy.read(address) as string;
+
             }
+
 
             localStorage.setItem('ds_proxy', proxyAddress);
             setDsProxyAddress(proxyAddress as Address);
@@ -35,11 +38,8 @@ export default function useWallet() {
 
 
         readDsProxy().catch((e)=>{ 
-            console.log('eee', e)
+            console.log('readDS proxy error', e)
         })
-
-
-        
     }, [isConnected, address]);
 
 
