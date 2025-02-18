@@ -16,6 +16,7 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, 'src/'),
       'use-sync-external-store/shim': path.resolve(__dirname, './node_modules/use-sync-external-store'),
+      'swiper/css': 'swiper/swiper.min.css',
     },
     extensions: ['.ts', '.tsx', '.json'],
   },

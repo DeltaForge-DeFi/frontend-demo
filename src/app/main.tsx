@@ -48,6 +48,7 @@ if (!rootElement.innerHTML) {
           <QueryClientProvider client={queryClient}>
             <RainbowKitProvider
               theme={rainbowTheme}
+              showRecentTransactions={true} 
             >
               <RouterProvider router={router} />
             </RainbowKitProvider>

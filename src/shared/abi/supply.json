@@ -1,5 +1,0 @@
-{
-    "adress": "0x0006aEE3a7FBDcD4f60854f99C38662ce342fE03",
-    "abi": ["function deposit(bytes calldata paramsBytes) external", "function withdraw(bytes calldata paramsBytes) external"]
-  }
-  

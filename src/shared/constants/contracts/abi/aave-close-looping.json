@@ -1,0 +1,12 @@
+{
+    "address": "0x5A86dC64ee2499f7d3a99d270082a9fb43a08326",
+    "abi": [
+        {
+            "inputs": [{ "type": "bytes", "name": "_callData", "internalType": "bytes" }],
+            "name": "executeActionDirect",
+            "outputs": [],
+            "stateMutability": "payable",
+            "type": "function"
+        }
+    ]
+}
