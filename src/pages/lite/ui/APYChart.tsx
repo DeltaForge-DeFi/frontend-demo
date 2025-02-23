@@ -2,27 +2,37 @@ import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
 
 interface APYChartProps {
-    yearlyAPY: number; // Годовой APY в процентах
+    yearlyAPY: number; 
 }
 
 export const APYChart: React.FC<APYChartProps> = ({ yearlyAPY }) => {
-    // Функция для расчета месячного APY
     const calculateMonthlyAPY = (yearlyAPY: number): number[] => {
-        const monthlyRate = Math.pow(1 + yearlyAPY / 100, 1/12) - 1;
         return Array(12).fill(0).map((_, index) => {
-            // Add random variation between -0.5% and +0.5%
-            const randomVariation = (Math.random() - 0.5) * 1;
-            // Calculate accumulated APY for each month with variation
-            const baseAPY = ((Math.pow(1 + monthlyRate, index + 1) - 1) * 100);
-            return Number((baseAPY + randomVariation).toFixed(2));
+            const x = index;
+            const smoothValue = yearlyAPY * (1 - Math.cos(x * Math.PI / 24)) / 2;
+            return Number(smoothValue.toFixed(2));
         });
     };
 
     const monthlyValues = calculateMonthlyAPY(yearlyAPY);
 
+    const categories = () => {
+        const months = [
+            'January', 'February', 'March', 'April',
+            'May', 'June', 'July', 'August',
+            'September', 'October', 'November', 'December'
+        ];
+        const currentMonth = new Date().getMonth(); // 0-11
+        const reorderedMonths = [
+            ...months.slice(currentMonth),
+            ...months.slice(0, currentMonth)
+        ];
+        return reorderedMonths;
+    }
+
     const options = {
         chart: {
-            type: 'line',
+            type: 'spline',
             backgroundColor: '#000000',
         },
         title: {
@@ -32,11 +42,7 @@ export const APYChart: React.FC<APYChartProps> = ({ yearlyAPY }) => {
             }
         },
         xAxis: {
-            categories: [
-                'January', 'February', 'March', 'April', 
-                'May', 'June', 'July', 'August', 
-                'September', 'October', 'November', 'December'
-            ],
+            categories: categories(),
             labels: {
                 style: {
                     color: '#FFFFFF'

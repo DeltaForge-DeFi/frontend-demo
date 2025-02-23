@@ -4,7 +4,6 @@ import { DsProxy } from '../ds-proxy/ds-proxy';
 
 import {ContractAddresses} from '@/shared/constants/contracts/addresses'
 import gmxShort from '@/shared/constants/contracts/abi/gmx-short.json'
-import { approve } from '@/shared/lib/approve';
 import { toast } from 'react-toastify';
 
 export const READER_ADDRESS = "0x0537C767cDAC0726c76Bb89e92904fe28fd02fE1";
