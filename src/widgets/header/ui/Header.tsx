@@ -9,7 +9,7 @@ export const Header: React.FC = () => {
       <div>
         <Link to="/">
           <div className="mt-4 flex w-full items-center justify-center">
-            <span className="font-boldtext-white text-center text-2xl">DELT▽ F△RGE</span>
+            <span className="font-boldtext-white text-center text-2xl">DELT△ F▽RGE</span>
           </div>
         </Link>
       </div>

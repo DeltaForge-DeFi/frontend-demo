@@ -20,11 +20,12 @@ export const LitePage = () => {
   const { active: isConnected, account: address, dsProxyAddress } = useWallet();
 
   const [amount, setAmount] = useState('');
-  const [longAmount, setLongAmount] = useState('');
-  const [shortAmount, setShortAmount] = useState('');
+  const [longData, setLongData] = useState<any>('');
+  const [shortData, setShortData] = useState<any>('');
   const [aby, setAby] = useState(10);
   const [longStatus, setLongStatus] = useState(false);
   const [shortStatus, setShortStatus] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
 
   useEffect(() => {
@@ -37,7 +38,7 @@ export const LitePage = () => {
 
       console.log('gmx', gmx)
       console.log('aave', formatUnits(aave.healthFactor, 18))
-
+      
       const aaveHealthFactor =  formatUnits(aave.healthFactor, 18) 
       setLongStatus(0 < Number(aaveHealthFactor) && 10 > Number(aaveHealthFactor))
       setShortStatus(gmx?.length > 0)
@@ -49,8 +50,8 @@ export const LitePage = () => {
   const handleConfirm = async () => {
     if (!address || !dsProxyAddress) return
 
-    const gmxAmount = parseUnits(shortAmount, 6);
-    const aaveAmount = parseUnits(longAmount, 6);
+    const gmxAmount = parseUnits(shortData.shortAmount, 6);
+    const aaveAmount = parseUnits(longData.longAmount, 6);
 
     const totalAmount = gmxAmount + aaveAmount;
 
@@ -79,15 +80,17 @@ export const LitePage = () => {
   };
 
   const calculate = async () => {
-    const value = parseFloat(amount);
-    const longValue = (value * 0.3).toString();
-    const shortValue = (value * 0.7).toString();
-
-    setLongAmount(longValue);
-    setShortAmount(shortValue);
+    setIsLoading(true);
 
     try {
-      const response = await fetch('http://150.241.107.169:3009/calculateStrategy', {
+      const value = parseFloat(amount);
+      const longValue = (value * 0.3).toString();
+      const shortValue = (value * 0.7).toString();
+
+      setLongData({ longAmount: longValue});
+      setShortData({ shortAmount: shortValue});
+
+      const response = await fetch(import.meta.env.VITE_ORACLE, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -96,14 +99,25 @@ export const LitePage = () => {
           depositAmount: value,
         }),
       });
+
       if (!response.ok) {
         throw new Error('Network response was not ok');
       }
+
       const data = await response.json();
       console.log('response', data);
       setAby(data.totalRateAPY);
+      setLongData(data.aave);
+      setShortData(data.gmx); 
+      console.log('longData', longData)
     } catch (error) {
       console.error('Error calculating APY:', error);
+      toast.error("Failed to calculate APY", {
+        position: 'top-left',
+        theme: 'dark',
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -159,12 +173,20 @@ export const LitePage = () => {
                   </div>
                   {
                     <div className="mb-4">
-                      <label className="mb-2 block text-white">
-                        Long: {longAmount ? `${Number(longAmount).toFixed(4)} USDC` : '---'}
-                      </label>
-                      <label className="mb-2 block text-white">
-                        Short: {shortAmount ? `${Number(shortAmount).toFixed(4)} USDC` : '---'}
-                      </label>
+                      {isLoading ? (
+                        <label className="mb-2 block text-white">
+                          Calculating positions...
+                        </label>
+                      ) : (
+                        <>
+                          <label className="mb-2 block text-white">
+                            Long: {longData ? `${Number(longData.longAmount).toFixed(4)} USDC` : '---'}
+                          </label>
+                          <label className="mb-2 block text-white">
+                            Short: {shortData ? `${Number(shortData.shortAmount).toFixed(4)} USDC` : '---'}
+                          </label>
+                        </>
+                      )}
                     </div>
                   }
                   <Button variant="outline" onClick={handleConfirm}>
