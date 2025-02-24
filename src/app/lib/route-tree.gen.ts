@@ -16,11 +16,18 @@ import { Route as rootRoute } from './../routes/__root'
 
 // Create Virtual Routes
 
+const ProLazyImport = createFileRoute('/pro')()
 const LiteLazyImport = createFileRoute('/lite')()
 const DebugLazyImport = createFileRoute('/debug')()
 const IndexLazyImport = createFileRoute('/')()
 
 // Create/Update Routes
+
+const ProLazyRoute = ProLazyImport.update({
+  id: '/pro',
+  path: '/pro',
+  getParentRoute: () => rootRoute,
+} as any).lazy(() => import('./../routes/pro.lazy').then((d) => d.Route))
 
 const LiteLazyRoute = LiteLazyImport.update({
   id: '/lite',
@@ -65,6 +72,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LiteLazyImport
       parentRoute: typeof rootRoute
     }
+    '/pro': {
+      id: '/pro'
+      path: '/pro'
+      fullPath: '/pro'
+      preLoaderRoute: typeof ProLazyImport
+      parentRoute: typeof rootRoute
+    }
   }
 }
 
@@ -74,12 +88,14 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexLazyRoute
   '/debug': typeof DebugLazyRoute
   '/lite': typeof LiteLazyRoute
+  '/pro': typeof ProLazyRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexLazyRoute
   '/debug': typeof DebugLazyRoute
   '/lite': typeof LiteLazyRoute
+  '/pro': typeof ProLazyRoute
 }
 
 export interface FileRoutesById {
@@ -87,14 +103,15 @@ export interface FileRoutesById {
   '/': typeof IndexLazyRoute
   '/debug': typeof DebugLazyRoute
   '/lite': typeof LiteLazyRoute
+  '/pro': typeof ProLazyRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/debug' | '/lite'
+  fullPaths: '/' | '/debug' | '/lite' | '/pro'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/debug' | '/lite'
-  id: '__root__' | '/' | '/debug' | '/lite'
+  to: '/' | '/debug' | '/lite' | '/pro'
+  id: '__root__' | '/' | '/debug' | '/lite' | '/pro'
   fileRoutesById: FileRoutesById
 }
 
@@ -102,12 +119,14 @@ export interface RootRouteChildren {
   IndexLazyRoute: typeof IndexLazyRoute
   DebugLazyRoute: typeof DebugLazyRoute
   LiteLazyRoute: typeof LiteLazyRoute
+  ProLazyRoute: typeof ProLazyRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexLazyRoute: IndexLazyRoute,
   DebugLazyRoute: DebugLazyRoute,
   LiteLazyRoute: LiteLazyRoute,
+  ProLazyRoute: ProLazyRoute,
 }
 
 export const routeTree = rootRoute
@@ -122,7 +141,8 @@ export const routeTree = rootRoute
       "children": [
         "/",
         "/debug",
-        "/lite"
+        "/lite",
+        "/pro"
       ]
     },
     "/": {
@@ -133,6 +153,9 @@ export const routeTree = rootRoute
     },
     "/lite": {
       "filePath": "lite.lazy.tsx"
+    },
+    "/pro": {
+      "filePath": "pro.lazy.tsx"
     }
   }
 }

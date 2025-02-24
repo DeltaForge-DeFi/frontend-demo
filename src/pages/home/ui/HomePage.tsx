@@ -64,9 +64,11 @@ const Slide1 = () => {
           >
             DOCS
           </a>
-          <button className="text-16 leading-25 tracking-8 inline-block w-full border border-white py-5 text-center font-medium uppercase transition-all duration-150 ease-in-out hover:bg-white hover:text-black">
-            <Link to="/lite">OPEN</Link>
-          </button>
+          <Link to="/lite" className=''>
+            <button className="text-16 leading-25 min-w-[200px] tracking-8 inline-block w-full border border-white py-5 text-center font-medium uppercase transition-all duration-150 ease-in-out hover:bg-white hover:text-black">
+              OPEN
+            </button>
+          </Link>
         </div>
       </div>
       <div className="relative col-span-12 flex justify-center">
