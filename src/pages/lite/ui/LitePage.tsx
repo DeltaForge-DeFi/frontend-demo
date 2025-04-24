@@ -15,6 +15,8 @@ import { hasEnoughBalance } from '@/shared/lib/hasEnoughBalance';
 import { WithdrawWindow } from './WithdrawWindow';
 import { DepositWindow } from './DepositWindow';
 import { InfoLitePageDialog } from './InfoLitePageDialog';
+import { isZeroAddress } from '@/shared/lib/isZeroAddress';
+import { DsProxy } from '@/entities/ds-proxy/ds-proxy';
 
 export const PositionStatusIndicator = ({ shortStatus, longStatus }: { shortStatus: boolean; longStatus: boolean }) => {
   return (
@@ -55,7 +57,15 @@ export const LitePage = () => {
   }, [dsProxyAddress]);
 
   const handleConfirm = async () => {
-    if (!address || !dsProxyAddress) return;
+    let storedProxy = localStorage.getItem(`ds_proxy_${address}`)
+    if (!address) return;
+
+    if (!storedProxy || isZeroAddress(storedProxy as Address)) {
+      await DsProxy.build(address);
+      const proxyAddress = await DsProxy.read(address);
+      storedProxy = proxyAddress as Address;
+      localStorage.setItem(`ds_proxy_${address}`, storedProxy as string);
+    }
 
     const gmxAmount = parseUnits(String(shortData?.shortAmount), 6);
     const aaveAmount = parseUnits(String(longData?.longAmount), 6);
@@ -76,11 +86,11 @@ export const LitePage = () => {
       });
       return;
     }
-    await checkAndApprove(address, ContractAddresses.USDC, dsProxyAddress, totalAmount);
+    await checkAndApprove(address, ContractAddresses.USDC, storedProxy as Address, totalAmount);
 
-    await gmxContract.createShort({ account: address as any, amount: gmxAmount, dsProxyAddress: dsProxyAddress as Address, gmxData: shortData as any });
-    await aaveContract.openLoooping({ account: address as any, amount: aaveAmount, dsProxyAddress: dsProxyAddress as Address });
-    await readPositions(dsProxyAddress);
+    await gmxContract.createShort({ account: address as any, amount: gmxAmount, dsProxyAddress: storedProxy as Address, gmxData: shortData as any });
+    await aaveContract.openLoooping({ account: address as any, amount: aaveAmount, dsProxyAddress: storedProxy as Address, aaveData: longData as any });
+    await readPositions(storedProxy as Address);
   };
 
   const onChange = async (e: any) => {
