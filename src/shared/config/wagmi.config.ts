@@ -2,8 +2,7 @@ import { getDefaultConfig } from '@rainbow-me/rainbowkit';
 import { createPublicClient, createWalletClient, custom, defineChain, http } from 'viem';
 import { arbitrum } from 'viem/chains';
 
-const ARBITRUM_ONE_RPC =
-  'https://virtual.arbitrum.rpc.tenderly.co/8ef1dc54-900a-4618-b977-b2b291351c55';
+const ARBITRUM_ONE_RPC ='https://virtual.arbitrum.rpc.tenderly.co/a3fbcc43-22fa-4b65-833d-af6c689e6944';
 
 export const virtual_arbitrum_one = defineChain({
   id: 42161,
@@ -15,7 +14,7 @@ export const virtual_arbitrum_one = defineChain({
   blockExplorers: {
     default: {
       name: 'Tenderly Explorer',
-      url: 'https://virtual.arbitrum.rpc.tenderly.co/a48cd150-c665-4e2f-b177-52473a38e9c7'
+      url: 'https://virtual.arbitrum.rpc.tenderly.co/c0157c3a-3dd1-4e62-8545-d2ca2bab5712'
     }
   },
 });

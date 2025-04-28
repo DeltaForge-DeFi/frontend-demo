@@ -35,12 +35,12 @@ export default function useWallet() {
         const readDsProxy = async () => {
             let proxyAddress: string | null = await DsProxy.read(address) as string | null;
 
-            if (!proxyAddress || isZeroAddress(proxyAddress)) {
+            /*if (!proxyAddress || isZeroAddress(proxyAddress)) {
                 await DsProxy.build(address)
                 proxyAddress = await DsProxy.read(address) as string;
-            }
+            }*/
 
-            localStorage.setItem(`ds_proxy_${address}`, proxyAddress);
+            localStorage.setItem(`ds_proxy_${address}`, proxyAddress || '');
             setDsProxyAddress(proxyAddress as Address);
         }
 

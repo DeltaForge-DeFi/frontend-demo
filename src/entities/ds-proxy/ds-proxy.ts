@@ -44,6 +44,7 @@ export const DsProxy = {
     },
 
     async build(address: Address) {
+        if (!walletClient) return;
         const data = await walletClient.writeContract({
             address: DsProxyFactory.adress as Address,
             abi: DsProxyFactory.abi,
