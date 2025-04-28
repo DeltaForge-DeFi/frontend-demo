@@ -403,8 +403,22 @@ export const aaveContract = {
   },
 
 
-  async openLoooping({ dsProxyAddress, account, amount }: { amount: bigint, dsProxyAddress: Address, account: Address }) {
+  async openLoooping({ dsProxyAddress, account, amount, aaveData = {
+    "longAmount": 33.95,
+    "longLeverage": 0,
+    "totalRate": 1.16788,
+    "criticalEthValue": 0
+  } }: {
+    amount: bigint, dsProxyAddress: Address, account: Address, aaveData?: {
+      "longAmount": number,
+      "longLeverage": number,
+      "totalRate": number,
+      "criticalEthValue": number
+    }
+  }) {
     const initialAmount = amount;
+    // I dont now what is this data
+    // const { } = aaveData;
 
     const callData = encodeAbiParameters(
       [
@@ -425,7 +439,7 @@ export const aaveContract = {
       args: [callData],
     });
 
-   const status = await DsProxy.execute({
+    const status = await DsProxy.execute({
       address: account as any,
       dsProxyAddress,
       executeContract: AAVE_OPEN_LOOPING_CONTRACT,
@@ -497,14 +511,39 @@ export const aaveContract = {
     };
 
     const executeData = encodeFunctionData(parameters);
+    try {
+      const status = await DsProxy.execute({
+        address: account as any,
+        dsProxyAddress,
+        executeContract: AAVE_CLOSE_LOOPING_ADDRESS as Address,
+        executeData,
+      })
 
-    const status = await DsProxy.execute({
-      address: account as any,
-      dsProxyAddress,
-      executeContract: AAVE_CLOSE_LOOPING_ADDRESS as Address,
-      executeData,
-    })
-
-    if (status ===  'reverted') { /* empty */ }
+      if (status === 'success') {
+        toast.success("Long is withdrawn", {
+          position: 'top-left',
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: false,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: 'dark',
+        });
+      } else {
+        throw new Error("Long is error");
+      }
+    } catch (error) {
+      toast.error("Long withdrawing short", {
+        position: 'top-left',
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: false,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: 'dark',
+      });
+    }
   }
 }

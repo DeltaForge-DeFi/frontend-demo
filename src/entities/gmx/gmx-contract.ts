@@ -2,7 +2,7 @@ import { publicClient } from '@/shared/config/wagmi.config';
 import { Address, encodeAbiParameters, encodeFunctionData, parseEther, parseUnits } from 'viem';
 import { DsProxy } from '../ds-proxy/ds-proxy';
 
-import {ContractAddresses} from '@/shared/constants/contracts/addresses'
+import { ContractAddresses } from '@/shared/constants/contracts/addresses'
 import gmxShort from '@/shared/constants/contracts/abi/gmx-short.json'
 import { toast } from 'react-toastify';
 
@@ -152,12 +152,30 @@ export const gmxContract = {
     amount,
     account,
     dsProxyAddress,
+    gmxData = {
+      //TODO: need setup default ?
+      "shortAmount": 3.21,
+      "shortLeverage": 2,
+      "totalRate": -0.0003852,
+      "criticalEthValue": 3872.3377499999992,
+      "initialCollateralDeltaAmount": 3.21,
+      "sizeDeltaUsd": 3
+    },
   }: {
     amount: bigint,
     dsProxyAddress: Address,
-    account: Address
+    account: Address,
+    gmxData?: {
+      "shortAmount": number
+      "shortLeverage": number,
+      "totalRate": number,
+      "criticalEthValue": number,
+      "initialCollateralDeltaAmount": number,
+      "sizeDeltaUsd": number
+    }
   }) {
     const value = parseEther("0.0005");
+    const { sizeDeltaUsd } = gmxData;
 
     const depositCallData = encodeAbiParameters(
       [
@@ -175,7 +193,7 @@ export const gmxContract = {
       [
         account,
         ContractAddresses.GMX_MARKET,
-        parseUnits("3", 30),
+        parseUnits(String(sizeDeltaUsd), 30),
         amount,
         ContractAddresses.GMX_EXCHANGE_ROUTER,
         ContractAddresses.GMX_READER,
@@ -185,13 +203,13 @@ export const gmxContract = {
         ContractAddresses.GMX_ROUTER,
       ],
     );
-  
+
     const executeData = encodeFunctionData({
       abi: gmxShort.abi,
       functionName: "createShort",
       args: [depositCallData],
     });
-  
+
     const status = await DsProxy.execute({
       address: account,
       dsProxyAddress,
@@ -225,7 +243,7 @@ export const gmxContract = {
     }
   },
 
-  async withdrawShort({dsProxyAddress, address}: {
+  async withdrawShort({ dsProxyAddress, address }: {
     dsProxyAddress: Address
     address: Address,
   }) {
@@ -250,7 +268,7 @@ export const gmxContract = {
 
 
     try {
-      await DsProxy.execute({
+      const status = await DsProxy.execute({
         address,
         dsProxyAddress,
         executeContract: gmxShort.address as Address,
@@ -259,19 +277,23 @@ export const gmxContract = {
         //@ts-ignore
         account: address as Address,
       })
-  
-      toast.success("Short is opened", {
-        position: 'top-left',
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: false,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: 'dark',
-      });
+
+      if (status === 'success') {
+        toast.success("Short is withdrawn", {
+          position: 'top-left',
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: false,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: 'dark',
+        });
+      } else {
+        throw new Error("Short is error");
+      }
     } catch (error) {
-      toast.error("Short is error", {
+      toast.error("Error withdrawing short", {
         position: 'top-left',
         autoClose: 5000,
         hideProgressBar: false,

@@ -5,15 +5,15 @@ interface APYChartProps {
     yearlyAPY: number; 
 }
 
-export const APYChart: React.FC<APYChartProps> = ({ yearlyAPY }) => {
-    const calculateMonthlyAPY = (yearlyAPY: number): number[] => {
-        return Array(12).fill(0).map((_, index) => {
-            const x = index;
-            const smoothValue = yearlyAPY * (1 - Math.cos(x * Math.PI / 24)) / 2;
-            return Number(smoothValue.toFixed(2));
-        });
-    };
+const calculateMonthlyAPY = (yearlyAPY: number): number[] => {
+    return Array(12).fill(0).map((_, index) => {
+        const x = index;
+        const smoothValue = yearlyAPY * (1 - Math.cos(x * Math.PI / 24)) / 2;
+        return Number(smoothValue.toFixed(2));
+    });
+};
 
+export const APYChart: React.FC<APYChartProps> = ({ yearlyAPY }) => {
     const monthlyValues = calculateMonthlyAPY(yearlyAPY);
 
     const categories = () => {
@@ -36,7 +36,7 @@ export const APYChart: React.FC<APYChartProps> = ({ yearlyAPY }) => {
             backgroundColor: '#000000',
         },
         title: {
-            text: 'Monthly APY Profit',
+            text: `${yearlyAPY.toFixed(2)}% APY Profit`,
             style: {
                 color: '#FFFFFF'
             }
