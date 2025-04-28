@@ -51,12 +51,14 @@ export const LitePage = () => {
     setShortStatus(gmx?.length > 0);
   };
 
+
   useEffect(() => {
     if (!dsProxyAddress) return;
     readPositions(dsProxyAddress);
   }, [dsProxyAddress]);
 
   const handleConfirm = async () => {
+
     let storedProxy = localStorage.getItem(`ds_proxy_${address}`)
     if (!address) return;
 
@@ -66,6 +68,9 @@ export const LitePage = () => {
       storedProxy = proxyAddress as Address;
       localStorage.setItem(`ds_proxy_${address}`, storedProxy as string);
     }
+
+    if (!address || !dsProxyAddress) return;
+
 
     const gmxAmount = parseUnits(String(shortData?.shortAmount), 6);
     const aaveAmount = parseUnits(String(longData?.longAmount), 6);

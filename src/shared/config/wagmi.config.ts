@@ -2,8 +2,7 @@ import { getDefaultConfig } from '@rainbow-me/rainbowkit';
 import { createPublicClient, createWalletClient, custom, defineChain, http } from 'viem';
 import { arbitrum } from 'viem/chains';
 
-const ARBITRUM_ONE_RPC =
-  'https://virtual.arbitrum.rpc.tenderly.co/a3fbcc43-22fa-4b65-833d-af6c689e6944';
+const ARBITRUM_ONE_RPC ='https://virtual.arbitrum.rpc.tenderly.co/a3fbcc43-22fa-4b65-833d-af6c689e6944';
 
 export const virtual_arbitrum_one = defineChain({
   id: 42161,
